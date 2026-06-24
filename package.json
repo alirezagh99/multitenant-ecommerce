@@ -7,12 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "generate:types": "payload generate:types"
+    "generate:types": "payload generate:types",
+    "db:fresh": "payload migrate:fresh"
   },
   "dependencies": {
     "@payloadcms/db-mongodb": "^3.85.1",
     "@payloadcms/next": "^3.85.1",
-    "@payloadcms/richtext-lexical": "^3.85.1",
+    "@payloadcms/richtext-lexical": "3.85.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "graphql": "^16.8.1",

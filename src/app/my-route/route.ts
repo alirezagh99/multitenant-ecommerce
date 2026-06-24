@@ -6,10 +6,8 @@ export const GET = async (request: Request) => {
     config: configPromise,
   });
 
-  // const data = await payload.find({
-  //   collection: "categories",
-  // });
-  return Response.json({
-    message: "This is an example of a custom route.",
+  const data = await payload.find({
+    collection: "categories",
   });
+  return Response.json(data);
 };
