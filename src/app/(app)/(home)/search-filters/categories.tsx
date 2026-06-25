@@ -2,16 +2,16 @@
 
 import { Category } from "@/payload-types";
 import { CategoryDropdown } from "./category-dropdown";
-import { CustomCategory } from "../types";
 import { useRef, useState, useEffect } from "react";
 import { fa } from "payload/i18n/fa";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ListFilterIcon } from "lucide-react";
 import { CategoriesSidebar } from "./categories-sidebar";
+import { CategoriesGetManyOutput } from "@/modules/categories/types";
 
 interface Props {
-  data: CustomCategory[];
+  data: CategoriesGetManyOutput;
 }
 
 export const Categories = ({ data }: Props) => {
@@ -64,11 +64,7 @@ export const Categories = ({ data }: Props) => {
 
   return (
     <div className="relative w-full">
-      <CategoriesSidebar
-        open={isSidebarOpen}
-        onOpenChange={setIsSidebarOpen}
-        data={data}
-      />
+      <CategoriesSidebar open={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
 
       {/* Hidden div to measure all items */}
       <div
@@ -76,11 +72,11 @@ export const Categories = ({ data }: Props) => {
         className="absolute opacity-0 pointer-events-none flex"
         style={{ position: "fixed", top: -9999, left: -9999 }}
       >
-        {data.map((category: Category) => {
+        {data.map((category) => {
           return (
             <div key={category.id}>
               <CategoryDropdown
-                category={category as CustomCategory}
+                category={category}
                 isActive={false}
                 isNavigationHovered={false}
               />
@@ -96,11 +92,11 @@ export const Categories = ({ data }: Props) => {
         onMouseLeave={() => setIsAnyHovered(false)}
         className="flex flex-nowrap items-center"
       >
-        {data.slice(0, visibleCount).map((category: Category) => {
+        {data.slice(0, visibleCount).map((category) => {
           return (
             <div key={category.id}>
               <CategoryDropdown
-                category={category as CustomCategory}
+                category={category}
                 isActive={activeCategory === category.slug}
                 isNavigationHovered={isAnyHovered}
               />
