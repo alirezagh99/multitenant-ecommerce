@@ -51,6 +51,7 @@ export const Navbar = () => {
 
   const trpc = useTRPC();
   const session = useQuery(trpc.auth.session.queryOptions());
+
   return (
     <nav className="h-20 flex border-b justify-between font-medium bg-white">
       <Link href={"/"} className="pl-6 flex items-center">
