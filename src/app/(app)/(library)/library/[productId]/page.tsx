@@ -9,6 +9,8 @@ import React, { Suspense } from "react";
 interface Props {
   params: Promise<{ productId: string }>;
 }
+export const dynamic = "force-dynamic";
+
 export default async function LibraryPage({ params }: Props) {
   const { productId } = await params;
 
