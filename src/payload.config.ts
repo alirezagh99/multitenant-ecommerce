@@ -1,5 +1,5 @@
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
-import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { lexicalEditor, UploadFeature } from "@payloadcms/richtext-lexical";
 import path from "path";
 import { buildConfig } from "payload";
 import { fileURLToPath } from "url";
@@ -12,6 +12,9 @@ import { Products } from "./collections/Products";
 import { Tags } from "./collections/Tags";
 import { Tenants } from "./collections/Tenants";
 import { multiTenantPlugin } from "@payloadcms/plugin-multi-tenant";
+import { Orders } from "./collections/Orders";
+import { Reviews } from "./collections/Reviews";
+import { isSuperAdmin } from "./lib/access";
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
@@ -21,9 +24,37 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      beforeNavLinks: ["@/components/stripe-verify#StripeVerify"],
+    },
   },
-  collections: [Users, Media, Categories, Products, Tags, Tenants],
-  editor: lexicalEditor(),
+  collections: [
+    Users,
+    Media,
+    Categories,
+    Products,
+    Tags,
+    Tenants,
+    Orders,
+    Reviews,
+  ],
+  editor: lexicalEditor({
+    features: ({ defaultFeatures }) => [
+      ...defaultFeatures,
+      UploadFeature({
+        collections: {
+          media: {
+            fields: [
+              {
+                name: "alt",
+                type: "text",
+              },
+            ],
+          },
+        },
+      }),
+    ],
+  }),
   secret: process.env.PAYLOAD_SECRET || "",
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
@@ -36,12 +67,12 @@ export default buildConfig({
     multiTenantPlugin({
       collections: {
         products: {},
+        media: {},
       },
       tenantsArrayField: {
         includeDefaultField: false,
       },
-      userHasAccessToAllTenants: (user) =>
-        Boolean(user?.roles?.includes("super-admin")),
+      userHasAccessToAllTenants: (user) => isSuperAdmin(user),
     }),
   ],
 });

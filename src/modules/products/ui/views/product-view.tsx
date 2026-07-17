@@ -6,12 +6,14 @@ import { Progress } from "@/components/ui/progress";
 import { formatCurrency, generateTenantURL } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { LinkIcon, StarIcon } from "lucide-react";
+import { CheckCheckIcon, CheckIcon, LinkIcon, StarIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 // import { CartButton } from "../components/cart-button";
 import dynamic from "next/dynamic";
+import { toast } from "sonner";
+import { RichText } from "@payloadcms/richtext-lexical/react";
 
 const CartButton = dynamic(
   () => import("../components/cart-button").then((mod) => mod.CartButton),
@@ -34,6 +36,9 @@ export const ProductView = ({ productId, tenantSlug }: Props) => {
   const { data } = useSuspenseQuery(
     trpc.products.getOne.queryOptions({ id: productId }),
   );
+
+  const [isCopied, setIsCopied] = useState(false);
+
   return (
     <div className="px-4 lg:px-12 py-10">
       <div className="border rounded-sm bg-white overflow-hidden">
@@ -80,20 +85,31 @@ export const ProductView = ({ productId, tenantSlug }: Props) => {
               </div>
 
               <div className="hidden lg:flex px-6 py-4 items-center justify-center">
-                <div className="flex items-center gap-1">
-                  <StarRating rating={4} iconClassName={"size-4"} />
+                <div className="flex items-center gap-2">
+                  <StarRating
+                    rating={data.reviewRating}
+                    iconClassName={"size-4"}
+                  />
+                  <p className="text-base font-medium">
+                    {data.reviewCount} ratings
+                  </p>
                 </div>
               </div>
             </div>
             <div className="block lg:hidden px-6 py-4 items-center justify-center border-b">
-              <div className="flex items-center gap-1">
-                <StarRating rating={4} iconClassName={"size-4"} />
-                <p className="text-base font-medium">{5} ratings</p>
+              <div className="flex items-center gap-2">
+                <StarRating
+                  rating={data.reviewRating}
+                  iconClassName={"size-4"}
+                />
+                <p className="text-base font-medium">
+                  {data.reviewCount} ratings
+                </p>
               </div>
             </div>
             <div className="p-6">
               {data.description ? (
-                <p>{data.description}</p>
+                <RichText data={data.description} />
               ) : (
                 <p className="font-medium text-muted-foreground italic">
                   No description provided.
@@ -105,14 +121,26 @@ export const ProductView = ({ productId, tenantSlug }: Props) => {
             <div className="border-t lg:border-t-0 lg:border-l h-full">
               <div className="flex flex-col gap-4 p-6 border-b">
                 <div className="flex flex-row items-center gap-2">
-                  <CartButton productId={productId} tenantSlug={tenantSlug} />
+                  <CartButton
+                    productId={productId}
+                    tenantSlug={tenantSlug}
+                    isPurchased={data.isPurchased}
+                  />
                   <Button
                     variant={"elevated"}
                     className="size-12"
-                    onClick={() => {}}
-                    disabled={false}
+                    onClick={() => {
+                      setIsCopied(true);
+                      navigator.clipboard.writeText(window.location.href);
+                      toast.success("URL copied to clipboard");
+
+                      setTimeout(() => {
+                        setIsCopied(false);
+                      }, 1000);
+                    }}
+                    disabled={isCopied}
                   >
-                    <LinkIcon />
+                    {isCopied ? <CheckIcon /> : <LinkIcon />}
                   </Button>
                 </div>
                 <p className="text-center font-medium">
@@ -127,8 +155,8 @@ export const ProductView = ({ productId, tenantSlug }: Props) => {
                   <h3 className="text-xl font-medium">Ratings</h3>
                   <div className="flex items-center gap-x-1 font-medium">
                     <StarIcon className="size-4 fill-black" />
-                    <p>({5})</p>
-                    <p className="text-base">{5} Ratings</p>
+                    <p>({data.reviewRating})</p>
+                    <p className="text-base">{data.reviewCount} Ratings</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-[auto_1fr_auto] gap-3 mt-4">
@@ -138,8 +166,13 @@ export const ProductView = ({ productId, tenantSlug }: Props) => {
                         <div className="font-medium">
                           {stars} {stars === 1 ? "star" : "stars"}
                         </div>
-                        <Progress value={25} className={"h-lh"} />
-                        <div className="font-medium">{25}%</div>
+                        <Progress
+                          value={data.ratingDistribution[stars]}
+                          className={"h-lh"}
+                        />
+                        <div className="font-medium">
+                          {data.ratingDistribution[stars]}%
+                        </div>
                       </Fragment>
                     );
                   })}
@@ -147,6 +180,23 @@ export const ProductView = ({ productId, tenantSlug }: Props) => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ProductViewSkeleton = () => {
+  return (
+    <div className="px-4 lg:px-12 py-10">
+      <div className="border rounded-sm bg-white overflow-hidden">
+        <div className="relative aspect-[3.9] border-b">
+          <Image
+            src={"/placeholder.png"}
+            alt={"placeholder"}
+            fill
+            className="object-cover"
+          />
         </div>
       </div>
     </div>
